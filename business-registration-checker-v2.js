@@ -305,36 +305,54 @@ document
     }
   }
   
-  function displayStatusResult(result) {
-    const statusResultDiv = document.getElementById("statusResult");
-    console.log("Status API Response:", result); // 디버깅을 위한 로그 추가
-  
-    if (result.data && result.data.length > 0) {
-      const statusInfo = result.data[0];
-      // 각 필드의 존재 여부를 확인
-      const b_no = statusInfo.b_no
-        ? formatBusinessNumber(statusInfo.b_no)
-        : "정보 없음";
-      const tax_type = statusInfo.tax_type || "정보 없음";
-      const tax_type_cd = statusInfo.tax_type_cd || "정보 없음";
-      const end_dt = statusInfo.end_dt || "해당없음";
-      const utcc_yn = statusInfo.utcc_yn || "정보 없음";
-  
-      statusResultDiv.innerHTML = `
-              <h3>상태조회 결과:</h3>
-              <table>
-                  <tr><th>사업자등록번호</th><td>${b_no}</td></tr>
-                  <tr><th>납세자상태</th><td>${tax_type}</td></tr>
-                  <tr><th>과세유형</th><td>${tax_type_cd}</td></tr>
-                  <tr><th>폐업일자</th><td>${end_dt}</td></tr>
-                  <tr><th>단위과세전환폐업여부</th><td>${utcc_yn}</td></tr>
-              </table>
-          `;
-    } else {
-      statusResultDiv.innerHTML =
-        "<p>상태조회 결과를 불러올 수 없습니다. 응답 데이터가 비어있습니다.</p>";
-    }
+function displayStatusResult(result) {
+  const statusResultDiv = document.getElementById("statusResult");
+  console.log("Status API Response:", result); // 디버깅을 위한 로그 추가
+
+  if (result.data && result.data.length > 0) {
+    const statusInfo = result.data[0];
+
+    // 각 필드의 존재 여부를 확인하고 기본값 설정
+    const b_no = statusInfo.b_no ? formatBusinessNumber(statusInfo.b_no) : "정보 없음";
+    const tax_type = statusInfo.tax_type || "정보 없음";
+    const tax_type_cd = statusInfo.tax_type_cd || "정보 없음";
+    const end_dt = statusInfo.end_dt || "해당없음";
+    const utcc_yn = statusInfo.utcc_yn || "정보 없음";
+    const tax_type_change_dt = statusInfo.tax_type_change_dt || "정보 없음";
+    const invoice_apply_dt = statusInfo.invoice_apply_dt || "정보 없음";
+
+    // 납세자 상태에 따른 설명 추가
+    const tax_type_explanation = getTaxTypeExplanation(tax_type);
+
+    statusResultDiv.innerHTML = `
+      <h3>상태조회 결과:</h3>
+      <table>
+        <tr><th>사업자등록번호</th><td>${b_no}</td></tr>
+        <tr><th>납세자상태</th><td>${tax_type} (${tax_type_explanation})</td></tr>
+        <tr><th>과세유형</th><td>${tax_type_cd}</td></tr>
+        <tr><th>폐업일자</th><td>${end_dt}</td></tr>
+        <tr><th>단위과세전환폐업여부</th><td>${utcc_yn}</td></tr>
+        <tr><th>과세유형전환일자</th><td>${tax_type_change_dt}</td></tr>
+        <tr><th>세금계산서적용일자</th><td>${invoice_apply_dt}</td></tr>
+      </table>
+    `;
+  } else {
+    statusResultDiv.innerHTML = "<p>상태조회 결과를 불러올 수 없습니다. 응답 데이터가 비어있거나 올바르지 않습니다.</p>";
   }
+}
+
+function getTaxTypeExplanation(tax_type) {
+  switch (tax_type) {
+    case "01":
+      return "계속사업자";
+    case "02":
+      return "휴업자";
+    case "03":
+      return "폐업자";
+    default:
+      return "알 수 없음";
+  }
+}
   
   document.getElementById("businessReset").addEventListener("click", function () {
     document.getElementById("businessForm").reset();
