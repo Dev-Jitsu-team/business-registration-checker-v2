@@ -350,7 +350,7 @@ document
  * @return 요청에 대한 응답 문자열
  */
 function generateReply(request) {
-    return "요청에 대한 응답: " + request;
+    return "???청에 대한 응답: " + request;
 }
 
 function formatBusinessNumber(number) {
