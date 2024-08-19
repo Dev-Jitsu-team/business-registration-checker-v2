@@ -284,26 +284,36 @@ document
         ).innerHTML = `<p>상태조회 중 오류가 발생했습니다: ${error.message}</p>`;
       });
     
-  function displayValidateResult(result) {
-    const validateResultDiv = document.getElementById("validateResult");
-    console.log("Validate API Response:", result); // 디버깅을 위한 로그 추가
-  
-    if (result.data && result.data.length > 0) {
-      const validateInfo = result.data[0];
-      const valid = validateInfo.valid === "01" ? "유효함" : "유효하지 않음";
-  
-      validateResultDiv.innerHTML = `
-              <h3>진위확인 결과:</h3>
-              <table>
-                  <tr><th>사업자등록번호</th><td>${validateInfo.b_no}</td></tr>
-                  <tr><th>유효성</th><td>${valid}</td></tr>
-              </table>
-          `;
-    } else {
-      validateResultDiv.innerHTML =
-        "<p>진위확인 결과를 불러올 수 없습니다. 응답 데이터가 비어있습니다.</p>";
-    }
+function displayValidateResult(result) {
+  const validateResultDiv = document.getElementById("validateResult");
+  console.log("Validate API Response:", result); // 디버깅을 위한 로그 추가
+
+  if (result.data && result.data.length > 0) {
+    const validateInfo = result.data[0];
+    const valid = validateInfo.valid === "01" ? "유효함" : "유효하지 않음";
+    const validClass = validateInfo.valid === "01" ? "valid" : "invalid";
+
+    validateResultDiv.innerHTML = `
+      <h3>진위확인 결과:</h3>
+      <table>
+        <tr><th>사업자등록번호</th><td>${validateInfo.b_no}</td></tr>
+        <tr><th>유효성</th><td class="${validClass}">${valid}</td></tr>
+      </table>
+    `;
+  } else {
+    validateResultDiv.innerHTML = `
+      <p class="error">진위확인 결과를 불러올 수 없습니다. 입력 정보를 확인하고 다시 시도해주세요.</p>
+    `;
   }
+
+  // 입력 필드 유지
+  document.getElementById("b_no").value = document.getElementById("b_no").value;
+  document.getElementById("start_dt_year").value = document.getElementById("start_dt_year").value;
+  document.getElementById("start_dt_month").value = document.getElementById("start_dt_month").value;
+  document.getElementById("start_dt_day").value = document.getElementById("start_dt_day").value;
+  document.getElementById("p_nm").value = document.getElementById("p_nm").value;
+  document.getElementById("company_nm").value = document.getElementById("company_nm").value;
+}
   
 function displayStatusResult(result) {
   const statusResultDiv = document.getElementById("statusResult");
@@ -338,6 +348,11 @@ function displayStatusResult(result) {
     `;
   } else {
     statusResultDiv.innerHTML = "<p>상태조회 결과를 불러올 수 없습니다. 응답 데이터가 비어있거나 올바르지 않습니다.</p>";
+  }
+
+  // 에러 처리 개선
+  if (result.status_code && result.status_code !== 'OK') {
+    statusResultDiv.innerHTML += `<p class="error">오류 발생: ${result.message || '알 수 없는 오류'}</p>`;
   }
 }
 
