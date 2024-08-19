@@ -389,3 +389,9 @@ function generateReply(request) {
 function formatBusinessNumber(number) {
   return number.replace(/(\d{3})(\d{2})(\d{5})/, '$1-$2-$3');
 }
+
+// Add event listener for the validateButton
+document.getElementById("validateButton").addEventListener("click", function(e) {
+  e.preventDefault();
+  document.getElementById("businessForm").dispatchEvent(new Event('submit'));
+});
