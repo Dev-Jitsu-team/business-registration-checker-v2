@@ -257,7 +257,7 @@ document
       });
     
     // 상태조회 API 호출
-    //fetch(
+    fetch(
       `https://api.odcloud.kr/api/nts-businessman/v1/status?serviceKey=zMbWz4YcC3pmooUpp4L1A%2Fmxt%2BL2qhqZjUaOIkEbJQWt9SMrL2P3%2F4kXx2nijn2XPmmSslFdJP4X2PtWjTEhpg%3D%3D`,
       {
         method: "POST",
@@ -266,7 +266,7 @@ document
         },
         body: JSON.stringify(data),
       }
-    
+    )
       .then((response) => {
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
@@ -350,7 +350,7 @@ document
  * @return 요청에 대한 응답 문자열
  */
 function generateReply(request) {
-    return "요청에 대한 응답: " + request;
+    return "???청에 대한 응답: " + request;
 }
 
 function formatBusinessNumber(number) {
