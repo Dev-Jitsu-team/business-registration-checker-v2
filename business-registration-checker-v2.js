@@ -257,7 +257,7 @@ document
       });
     
     // 상태조회 API 호출
-    //fetch(
+    fetch(
       `https://api.odcloud.kr/api/nts-businessman/v1/status?serviceKey=zMbWz4YcC3pmooUpp4L1A%2Fmxt%2BL2qhqZjUaOIkEbJQWt9SMrL2P3%2F4kXx2nijn2XPmmSslFdJP4X2PtWjTEhpg%3D%3D`,
       {
         method: "POST",
@@ -266,7 +266,7 @@ document
         },
         body: JSON.stringify(data),
       }
-    
+    )
       .then((response) => {
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
@@ -284,57 +284,90 @@ document
         ).innerHTML = `<p>상태조회 중 오류가 발생했습니다: ${error.message}</p>`;
       });
     
-  function displayValidateResult(result) {
-    const validateResultDiv = document.getElementById("validateResult");
-    console.log("Validate API Response:", result); // 디버깅을 위한 로그 추가
-  
-    if (result.data && result.data.length > 0) {
-      const validateInfo = result.data[0];
-      const valid = validateInfo.valid === "01" ? "유효함" : "유효하지 않음";
-  
-      validateResultDiv.innerHTML = `
-              <h3>진위확인 결과:</h3>
-              <table>
-                  <tr><th>사업자등록번호</th><td>${validateInfo.b_no}</td></tr>
-                  <tr><th>유효성</th><td>${valid}</td></tr>
-              </table>
-          `;
-    } else {
-      validateResultDiv.innerHTML =
-        "<p>진위확인 결과를 불러올 수 없습니다. 응답 데이터가 비어있습니다.</p>";
-    }
+function displayValidateResult(result) {
+  const validateResultDiv = document.getElementById("validateResult");
+  console.log("Validate API Response:", result); // 디버깅을 위한 로그 추가
+
+  if (result.data && result.data.length > 0) {
+    const validateInfo = result.data[0];
+    const valid = validateInfo.valid === "01" ? "유효함" : "유효하지 않음";
+    const validClass = validateInfo.valid === "01" ? "valid" : "invalid";
+
+    validateResultDiv.innerHTML = `
+      <h3>진위확인 결과:</h3>
+      <table>
+        <tr><th>사업자등록번호</th><td>${validateInfo.b_no}</td></tr>
+        <tr><th>유효성</th><td class="${validClass}">${valid}</td></tr>
+      </table>
+    `;
+  } else {
+    validateResultDiv.innerHTML = `
+      <p class="error">진위확인 결과를 불러올 수 없습니다. 입력 정보를 확인하고 다시 시도해주세요.</p>
+    `;
   }
+
+  // 입력 필드 유지
+  document.getElementById("b_no").value = document.getElementById("b_no").value;
+  document.getElementById("start_dt_year").value = document.getElementById("start_dt_year").value;
+  document.getElementById("start_dt_month").value = document.getElementById("start_dt_month").value;
+  document.getElementById("start_dt_day").value = document.getElementById("start_dt_day").value;
+  document.getElementById("p_nm").value = document.getElementById("p_nm").value;
+  document.getElementById("company_nm").value = document.getElementById("company_nm").value;
+}
   
-  function displayStatusResult(result) {
-    const statusResultDiv = document.getElementById("statusResult");
-    console.log("Status API Response:", result); // 디버깅을 위한 로그 추가
-  
-    if (result.data && result.data.length > 0) {
-      const statusInfo = result.data[0];
-      // 각 필드의 존재 여부를 확인
-      const b_no = statusInfo.b_no
-        ? formatBusinessNumber(statusInfo.b_no)
-        : "정보 없음";
-      const tax_type = statusInfo.tax_type || "정보 없음";
-      const tax_type_cd = statusInfo.tax_type_cd || "정보 없음";
-      const end_dt = statusInfo.end_dt || "해당없음";
-      const utcc_yn = statusInfo.utcc_yn || "정보 없음";
-  
-      statusResultDiv.innerHTML = `
-              <h3>상태조회 결과:</h3>
-              <table>
-                  <tr><th>사업자등록번호</th><td>${b_no}</td></tr>
-                  <tr><th>납세자상태</th><td>${tax_type}</td></tr>
-                  <tr><th>과세유형</th><td>${tax_type_cd}</td></tr>
-                  <tr><th>폐업일자</th><td>${end_dt}</td></tr>
-                  <tr><th>단위과세전환폐업여부</th><td>${utcc_yn}</td></tr>
-              </table>
-          `;
-    } else {
-      statusResultDiv.innerHTML =
-        "<p>상태조회 결과를 불러올 수 없습니다. 응답 데이터가 비어있습니다.</p>";
-    }
+function displayStatusResult(result) {
+  const statusResultDiv = document.getElementById("statusResult");
+  console.log("Status API Response:", result); // 디버깅을 위한 로그 추가
+
+  if (result.data && result.data.length > 0) {
+    const statusInfo = result.data[0];
+
+    // 각 필드의 존재 여부를 확인하고 기본값 설정
+    const b_no = statusInfo.b_no ? formatBusinessNumber(statusInfo.b_no) : "정보 없음";
+    const tax_type = statusInfo.tax_type || "정보 없음";
+    const tax_type_cd = statusInfo.tax_type_cd || "정보 없음";
+    const end_dt = statusInfo.end_dt || "해당없음";
+    const utcc_yn = statusInfo.utcc_yn || "정보 없음";
+    const tax_type_change_dt = statusInfo.tax_type_change_dt || "정보 없음";
+    const invoice_apply_dt = statusInfo.invoice_apply_dt || "정보 없음";
+
+    // 납세자 상태에 따른 설명 추가
+    const tax_type_explanation = getTaxTypeExplanation(tax_type);
+
+    statusResultDiv.innerHTML = `
+      <h3>상태조회 결과:</h3>
+      <table>
+        <tr><th>사업자등록번호</th><td>${b_no}</td></tr>
+        <tr><th>납세자상태</th><td>${tax_type} (${tax_type_explanation})</td></tr>
+        <tr><th>과세유형</th><td>${tax_type_cd}</td></tr>
+        <tr><th>폐업일자</th><td>${end_dt}</td></tr>
+        <tr><th>단위과세전환폐업여부</th><td>${utcc_yn}</td></tr>
+        <tr><th>과세유형전환일자</th><td>${tax_type_change_dt}</td></tr>
+        <tr><th>세금계산서적용일자</th><td>${invoice_apply_dt}</td></tr>
+      </table>
+    `;
+  } else {
+    statusResultDiv.innerHTML = "<p>상태조회 결과를 불러올 수 없습니다. 응답 데이터가 비어있거나 올바르지 않습니다.</p>";
   }
+
+  // 에러 처리 개선
+  if (result.status_code && result.status_code !== 'OK') {
+    statusResultDiv.innerHTML += `<p class="error">오류 발생: ${result.message || '알 수 없는 오류'}</p>`;
+  }
+}
+
+function getTaxTypeExplanation(tax_type) {
+  switch (tax_type) {
+    case "01":
+      return "계속사업자";
+    case "02":
+      return "휴업자";
+    case "03":
+      return "폐업자";
+    default:
+      return "알 수 없음";
+  }
+}
   
   document.getElementById("businessReset").addEventListener("click", function () {
     document.getElementById("businessForm").reset();
@@ -350,9 +383,15 @@ document
  * @return 요청에 대한 응답 문자열
  */
 function generateReply(request) {
-    return "요청에 대한 응답: " + request;
+    return "???청에 대한 응답: " + request;
 }
 
 function formatBusinessNumber(number) {
   return number.replace(/(\d{3})(\d{2})(\d{5})/, '$1-$2-$3');
 }
+
+// Add event listener for the validateButton
+document.getElementById("validateButton").addEventListener("click", function(e) {
+  e.preventDefault();
+  document.getElementById("businessForm").dispatchEvent(new Event('submit'));
+});
